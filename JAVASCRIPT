@@ -1,0 +1,207 @@
+// Global variables
+let username = '';
+let score = 0;
+let currentQuestionIndex = 0;
+let currentCategory = '';
+let currentDifficulty = '';
+let timer;
+let timeRemaining = 60;
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+let questionSet = [];
+
+// Question sets (unchanged from your original code)
+const simpleQuestions = [
+  { question: "What is 2 + 2?", answer: 4 },
+  { question: "What is 5 + 3?", answer: 8 },
+  { question: "What is 12 - 4?", answer: 8 },
+  { question: "What is 9 * 3?", answer: 27 },
+  { question: "What is 16 / 4?", answer: 4 }
+];
+
+const complexQuestions = [
+  { question: "What is 15 + 35?", answer: 50 },
+  { question: "What is 12 * 25?", answer: 300 },
+  { question: "What is 100 - 35?", answer: 65 },
+  { question: "What is 121 / 11?", answer: 11 },
+  { question: "What is 57 * 8?", answer: 456 }
+];
+
+const fractionsQuestions = [
+  { question: "What is 1/2 + 3/4?", answer: 5/4 },
+  { question: "What is 5/6 - 1/3?", answer: 0.5 },
+  { question: "What is 2/3 * 3/4?", answer: 0.5 },
+  { question: "What is 7/8 ÷ 2/3?", answer: 21/16 },
+];
+
+const powersQuestions = [
+  { question: "What is 2^3?", answer: 8 },
+  { question: "What is 5^2?", answer: 25 },
+  { question: "What is 9^0.5?", answer: 3 },
+  { question: "What is 3^4?", answer: 81 },
+];
+
+const percentagesQuestions = [
+  { question: "What is 25% of 200?", answer: 50 },
+  { question: "What is 15% of 300?", answer: 45 },
+  { question: "What is 50% of 120?", answer: 60 },
+  { question: "What is 10% of 500?", answer: 50 },
+];
+
+const geometryQuestions = [
+  { question: "Area of square side 4?", answer: 16 },
+  { question: "Perimeter of rectangle 5x3?", answer: 16 },
+  { question: "Area of circle radius 7? (πr²)", answer: 153.94 },
+  { question: "Volume of cube side 3?", answer: 27 },
+];
+
+// Login function
+function login() {
+  const input = document.getElementById('username-input').value.trim();
+  if (input) {
+    username = input;
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+    document.getElementById('category-selection').style.display = 'block';
+  } else {
+    alert('Please enter your name.');
+  }
+}
+
+// Start game
+function chooseCategory(category) {
+  currentCategory = category;
+  document.getElementById('category-selection').style.display = 'none';
+  document.getElementById('difficulty-selection').style.display = 'block';
+}
+
+function setDifficulty(difficulty) {
+  currentDifficulty = difficulty;
+  setQuestionSet();
+  document.getElementById('difficulty-selection').style.display = 'none';
+  document.getElementById('question-container').style.display = 'block';
+  startTimer();
+  displayNextQuestion();
+}
+
+function setQuestionSet() {
+  switch (currentCategory) {
+    case 'simple': questionSet = simpleQuestions; break;
+    case 'complex': questionSet = complexQuestions; break;
+    case 'fractions': questionSet = fractionsQuestions; break;
+    case 'powers': questionSet = powersQuestions; break;
+    case 'percentages': questionSet = percentagesQuestions; break;
+    case 'geometry': questionSet = geometryQuestions; break;
+    default: questionSet = simpleQuestions;
+  }
+}
+
+// Timer
+function startTimer() {
+  timeRemaining = 60;
+  document.getElementById('timer').innerText = timeRemaining;
+  timer = setInterval(() => {
+    timeRemaining--;
+    document.getElementById('timer').innerText = timeRemaining;
+    if (timeRemaining <= 0) {
+      clearInterval(timer);
+      gameOver();
+    }
+  }, 1000);
+}
+
+// Questions
+function displayNextQuestion() {
+  if (currentQuestionIndex < questionSet.length) {
+    document.getElementById('question').innerText = questionSet[currentQuestionIndex].question;
+  } else {
+    gameOver();
+  }
+}
+
+function checkAnswer() {
+  const userAnswer = document.getElementById('answer').value;
+  if (isValidInput(userAnswer)) {
+    const correctAnswer = questionSet[currentQuestionIndex].answer;
+    if (parseFloat(userAnswer) === correctAnswer) {
+      score++;
+      document.getElementById('feedback').innerText = "Correct!";
+    } else {
+      document.getElementById('feedback').innerText = "Wrong! Correct answer: " + correctAnswer;
+    }
+    currentQuestionIndex++;
+    document.getElementById('score').innerText = score;
+    document.getElementById('answer').value = '';
+    displayNextQuestion();
+  } else {
+    document.getElementById('feedback').innerText = "Please enter a valid number.";
+  }
+}
+
+function isValidInput(input) {
+  const regex = /^[0-9]+(\.[0-9]+)?$/;
+  return regex.test(input);
+}
+
+// Game Over
+function gameOver() {
+  clearInterval(timer);
+  document.getElementById('question-container').style.display = 'none';
+  document.getElementById('game-over').style.display = 'block';
+  updateLeaderboard();
+  displayLeaderboard();
+}
+
+// Retry
+function retryGame() {
+  score = 0;
+  currentQuestionIndex = 0;
+  timeRemaining = 60;
+  document.getElementById('score').innerText = score;
+  document.getElementById('game-over').style.display = 'none';
+  document.getElementById('category-selection').style.display = 'block';
+  document.getElementById('feedback').innerText = '';
+}
+
+// Leaderboard functions
+function updateLeaderboard() {
+  let existingPlayer = leaderboard.find(player => player.name === username);
+  if (existingPlayer) {
+    if (score > existingPlayer.score) {
+      existingPlayer.score = score;
+    }
+  } else {
+    leaderboard.push({ name: username, score: score });
+  }
+
+  // Sort by score descending
+  leaderboard.sort((a, b) => b.score - a.score);
+  
+  // Keep only top 10 scores
+  if (leaderboard.length > 10) {
+    leaderboard = leaderboard.slice(0, 10);
+  }
+  
+  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
+
+function displayLeaderboard() {
+  const leaderboardElement = document.getElementById('leaderboard');
+  leaderboardElement.innerHTML = '<h3>Leaderboard</h3>';
+  
+  if (leaderboard.length === 0) {
+    leaderboardElement.innerHTML += '<p>No scores yet!</p>';
+    return;
+  }
+  
+  const ol = document.createElement('ol');
+  leaderboard.forEach((player, index) => {
+    const li = document.createElement('li');
+    li.textContent = ${player.name}: ${player.score} points;
+    if (player.name === username) {
+      li.style.fontWeight = 'bold';
+    }
+    ol.appendChild(li);
+  });
+  
+  leaderboardElement.appendChild(ol);
+}

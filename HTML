@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathrizz - Brain Trainer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>Mathrizz - Brain Trainer</h1>
+
+    <div id="login-container">
+        <input type="text" id="username" placeholder="Enter your name">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="category-selection" style="display:none;">
+        <button onclick="chooseCategory('simple')">Simple Problems</button>
+        <button onclick="chooseCategory('complex')">Complex Problems</button>
+        <button onclick="chooseCategory('fractions')">Fractions</button>
+        <button onclick="chooseCategory('powers')">Powers & Roots</button>
+        <button onclick="chooseCategory('percentages')">Percentages</button>
+        <button onclick="chooseCategory('geometry')">Geometry</button>
+    </div>
+
+    <div id="difficulty-selection" style="display: none;">
+        <button onclick="setDifficulty('easy')">Easy</button>
+        <button onclick="setDifficulty('medium')">Medium</button>
+        <button onclick="setDifficulty('hard')">Hard</button>
+    </div>
+
+    <div id="question-container" style="display: none;">
+        <p id="question"></p>
+        <input type="text" id="answer" placeholder="Enter your answer">
+        <button onclick="checkAnswer()">Submit</button>
+    </div>
+
+    <div id="feedback"></div>
+
+    <div id="score-container" style="display: none;">
+        <p>Your score: <span id="score">0</span></p>
+    </div>
+
+    <div id="timer-container" style="display: none;">
+        <p>Time remaining: <span id="timer">60</span> seconds</p>
+    </div>
+
+    <div id="game-over" style="display: none;">
+        <button onclick="retryGame()">Retry</button>
+        <h3>Leaderboard</h3>
+        <ul id="leaderboard"></ul>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
